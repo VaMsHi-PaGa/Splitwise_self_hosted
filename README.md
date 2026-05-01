@@ -233,6 +233,11 @@ npm test
 
 ## Production Deployment
 
+### Live Deployment
+
+- Frontend: https://splitdengurapuka.netlify.app
+- Backend: deploy separately (see below) and set `NEXT_PUBLIC_API_URL` in Netlify env vars
+
 ### Architecture for Netlify Hosting
 
 Netlify only hosts the **frontend** (Next.js). The backend (FastAPI + PostgreSQL) needs a separate host. Recommended setup:

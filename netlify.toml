@@ -5,6 +5,9 @@
 
 [build.environment]
   NODE_VERSION = "20"
+  # Override this in Netlify UI -> Site settings -> Environment variables
+  # once your backend is deployed (e.g. https://splitsmart-backend.onrender.com)
+  NEXT_PUBLIC_API_URL = "https://splitsmart-backend.onrender.com"
 
 [[plugins]]
   package = "@netlify/plugin-nextjs"

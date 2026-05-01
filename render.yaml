@@ -18,7 +18,7 @@ services:
       - key: SEED_DEMO
         value: false
       - key: CORS_ORIGINS
-        value: https://your-netlify-app.netlify.app
+        value: https://splitdengurapuka.netlify.app
 
 databases:
   - name: splitsmart-db
