@@ -13,8 +13,16 @@ def seed_demo_data(db: Session):
     if not table_exists("users"):
         return
 
-    if db.query(User).filter(User.email == "aarav@example.com").first():
+    if db.query(User).filter(User.email == "test@test.com").first():
         return
+
+    test_user = User(
+        name="Test User",
+        email="test@test.com",
+        phone="9999999999",
+        password_hash=hash_password("test123")
+    )
+    db.add(test_user)
 
     aarav = User(
         name="Aarav Singh",
@@ -42,6 +50,7 @@ def seed_demo_data(db: Session):
 
     db.add(GroupMember(group_id=group.id, user_id=aarav.id))
     db.add(GroupMember(group_id=group.id, user_id=priya.id))
+    db.add(GroupMember(group_id=group.id, user_id=test_user.id))
 
     expense1 = Expense(
         group_id=group.id,

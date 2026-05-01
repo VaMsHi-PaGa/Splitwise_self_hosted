@@ -50,9 +50,29 @@ A production-ready expense sharing application tailored for Indian users. Built 
 
 The application comes with pre-seeded demo data:
 
-- **User 1**: aarav@example.com / password123
-- **User 2**: priya@example.com / password123
-- **Group**: Flatmates (with sample expenses)
+| Email | Password | Notes |
+|-------|----------|-------|
+| `test@test.com` | `test123` | Quick test login |
+| `aarav@example.com` | `password123` | Has sample expenses |
+| `priya@example.com` | `password123` | Has sample expenses |
+
+All three users are members of the **Flatmates** group with pre-populated expenses (₹1200 groceries, ₹2400 electricity bill).
+
+### Creating Additional Users
+
+**Via the UI**: Go to `/register` and fill out the form.
+
+**Via CLI** (after `docker compose up`):
+```bash
+docker compose exec backend python create_user.py myemail@example.com mypassword "My Name"
+```
+
+**Via API**:
+```bash
+curl -X POST http://localhost:8000/auth/register \
+  -H "Content-Type: application/json" \
+  -d '{"name": "My Name", "email": "me@example.com", "password": "secret123"}'
+```
 
 ## Architecture
 
