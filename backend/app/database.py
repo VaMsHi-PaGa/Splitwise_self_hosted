@@ -4,7 +4,11 @@ from typing import Generator
 
 from app.config import settings
 
-engine = create_engine(settings.database_url, echo=False, pool_pre_ping=True)
+db_url = settings.database_url
+if db_url.startswith("postgres://"):
+    db_url = db_url.replace("postgres://", "postgresql://", 1)
+
+engine = create_engine(db_url, echo=False, pool_pre_ping=True)
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 Base = declarative_base()
 

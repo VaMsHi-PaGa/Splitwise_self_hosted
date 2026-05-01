@@ -46,11 +46,20 @@ def recurring_job():
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    init_db()
-    start_scheduler()
+    try:
+        init_db()
+    except Exception as e:
+        logger.error(f"init_db failed: {e}")
+    try:
+        start_scheduler()
+    except Exception as e:
+        logger.error(f"scheduler failed to start: {e}")
     logger.info("Application started")
     yield
-    scheduler.shutdown()
+    try:
+        scheduler.shutdown()
+    except Exception:
+        pass
     logger.info("Application shutdown")
 
 
