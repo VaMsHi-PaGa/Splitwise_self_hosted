@@ -213,15 +213,111 @@ npm test
 
 ## Production Deployment
 
-1. Change `JWT_SECRET` to a strong random value
-2. Update database connection string for production database
-3. Set `SEED_DEMO=false` to prevent demo data in production
-4. Enable HTTPS and CORS restrictions
-5. Use environment-specific `.env` files
+### Architecture for Netlify Hosting
 
-Example:
+Netlify only hosts the **frontend** (Next.js). The backend (FastAPI + PostgreSQL) needs a separate host. Recommended setup:
+
+| Component | Host | Cost |
+|-----------|------|------|
+| Frontend (Next.js) | **Netlify** | Free |
+| Backend (FastAPI) | **Render** / Railway / Fly.io | Free tier |
+| Database (PostgreSQL) | **Neon** / Supabase / Render | Free tier |
+| Bill uploads | Render disk / S3 / Cloudinary | Free tier |
+
+---
+
+### Step 1: Deploy Backend (Render — Recommended)
+
+The repo includes `render.yaml` for one-click deployment.
+
+1. Push this repo to GitHub
+2. Go to https://render.com → "New" → "Blueprint"
+3. Connect your GitHub repo, select this project
+4. Render auto-detects `render.yaml` and creates:
+   - Web service `splitsmart-backend` (FastAPI in Docker)
+   - PostgreSQL database `splitsmart-db`
+5. After deploy, note your backend URL (e.g. `https://splitsmart-backend.onrender.com`)
+6. In Render dashboard, update `CORS_ORIGINS` env var to your Netlify URL
+
+**Manual Render setup (alternative)**:
+- New → Web Service → Connect repo
+- Root directory: `backend`
+- Runtime: Docker
+- Add env vars: `DATABASE_URL`, `JWT_SECRET` (random 64-char string), `SEED_DEMO=false`, `CORS_ORIGINS=https://your-app.netlify.app`
+- Add a PostgreSQL database, copy connection string to `DATABASE_URL`
+
+**Alternative hosts**:
+- **Railway**: `railway up` from `backend/` directory
+- **Fly.io**: `fly launch` from `backend/`, add Postgres with `fly postgres create`
+
+---
+
+### Step 2: Deploy Frontend to Netlify
+
+The repo includes `netlify.toml` with Next.js plugin pre-configured.
+
+#### Option A — Netlify UI (Easiest)
+
+1. Push repo to GitHub
+2. Go to https://app.netlify.com → "Add new site" → "Import an existing project"
+3. Connect your GitHub repo
+4. Netlify auto-detects `netlify.toml`. Confirm:
+   - **Base directory**: `frontend`
+   - **Build command**: `npm run build`
+   - **Publish directory**: `frontend/.next`
+5. **Environment variables** (Site settings → Environment variables):
+   ```
+   NEXT_PUBLIC_API_URL = https://splitsmart-backend.onrender.com
+   ```
+6. Click "Deploy site"
+
+#### Option B — Netlify CLI
+
 ```bash
-docker-compose -f docker-compose.prod.yml up -d
+npm install -g netlify-cli
+cd frontend
+netlify init
+netlify env:set NEXT_PUBLIC_API_URL https://splitsmart-backend.onrender.com
+netlify deploy --prod
+```
+
+---
+
+### Step 3: Connect Frontend ↔ Backend
+
+After both are deployed:
+
+1. Note your Netlify URL (e.g. `https://splitsmart-app.netlify.app`)
+2. Update backend CORS in Render dashboard:
+   - `CORS_ORIGINS` → `https://splitsmart-app.netlify.app`
+3. Restart backend service
+4. Visit your Netlify URL — login with seeded users or register new ones
+
+---
+
+### Required Environment Variables Summary
+
+**Backend (Render / Railway / Fly.io):**
+```
+DATABASE_URL=postgresql://user:pass@host:5432/dbname
+JWT_SECRET=<generate-strong-random-64-char-string>
+JWT_EXPIRE_MINUTES=1440
+SEED_DEMO=false
+CORS_ORIGINS=https://your-app.netlify.app
+```
+
+**Frontend (Netlify):**
+```
+NEXT_PUBLIC_API_URL=https://your-backend.onrender.com
+```
+
+---
+
+### Self-Hosting Locally (Docker)
+
+For full local stack (no Netlify):
+```bash
+docker-compose up --build
 ```
 
 ## Troubleshooting

@@ -6,6 +6,7 @@ class Settings(BaseSettings):
     jwt_secret: str = "your-secret-key-change-in-production"
     jwt_expire_minutes: int = 1440
     seed_demo: bool = True
+    cors_origins: str = "*"
 
     class Config:
         env_file = ".env"
@@ -14,6 +15,12 @@ class Settings(BaseSettings):
     @property
     def async_database_url(self) -> str:
         return self.database_url.replace("postgresql://", "postgresql+asyncpg://")
+
+    @property
+    def cors_origins_list(self) -> list[str]:
+        if self.cors_origins == "*":
+            return ["*"]
+        return [origin.strip() for origin in self.cors_origins.split(",")]
 
 
 settings = Settings()
