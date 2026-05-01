@@ -5,7 +5,7 @@ import uuid
 from jose import JWTError, jwt
 from passlib.context import CryptContext
 from fastapi import Depends, HTTPException, status
-from fastapi.security import HTTPBearer, HTTPAuthCredentials
+from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 
 from app.config import settings
 from app.database import SessionLocal
@@ -29,7 +29,7 @@ def create_access_token(user_id: str) -> str:
     return jwt.encode(payload, settings.jwt_secret, algorithm="HS256")
 
 
-def get_current_user(credentials: HTTPAuthCredentials = Depends(security)) -> User:
+def get_current_user(credentials: HTTPAuthorizationCredentials = Depends(security)) -> User:
     db = SessionLocal()
     try:
         token = credentials.credentials
