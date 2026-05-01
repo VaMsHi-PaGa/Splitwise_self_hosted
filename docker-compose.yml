@@ -1,0 +1,64 @@
+version: '3.8'
+
+services:
+  db:
+    image: postgres:16
+    container_name: splitsmart-db
+    environment:
+      POSTGRES_USER: splitsmart
+      POSTGRES_PASSWORD: splitsmart_dev_password
+      POSTGRES_DB: splitsmart
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U splitsmart"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - splitsmart-network
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: splitsmart-backend
+    environment:
+      DATABASE_URL: postgresql://splitsmart:splitsmart_dev_password@db:5432/splitsmart
+      JWT_SECRET: ${JWT_SECRET:-your-secret-key-change-in-production}
+      JWT_EXPIRE_MINUTES: ${JWT_EXPIRE_MINUTES:-1440}
+      SEED_DEMO: ${SEED_DEMO:-true}
+      PYTHONUNBUFFERED: 1
+    volumes:
+      - uploads:/data/uploads
+    ports:
+      - "8000:8000"
+    depends_on:
+      db:
+        condition: service_healthy
+    networks:
+      - splitsmart-network
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: splitsmart-frontend
+    environment:
+      NEXT_PUBLIC_API_URL: http://localhost:8000
+    ports:
+      - "3000:3000"
+    depends_on:
+      - backend
+    networks:
+      - splitsmart-network
+
+volumes:
+  pgdata:
+  uploads:
+
+networks:
+  splitsmart-network:
+    driver: bridge
